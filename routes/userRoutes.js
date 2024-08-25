@@ -10,9 +10,7 @@ router.post("/login", async (req, res) => {
   if (user == null) {
     return res.status(400).send("Cannot find user");
   }
-  if (!user.isActive) {
-    return res.status(403).send("User is not active");
-  }
+
   try {
     if (await bcrypt.compare(req.body.password, user.password)) {
       const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: "24h" });

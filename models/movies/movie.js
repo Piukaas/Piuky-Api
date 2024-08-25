@@ -12,7 +12,6 @@ const seasonSchema = new mongoose.Schema({
       watched: { type: Boolean, required: false, default: false },
     },
   ],
-  discVersion: { type: String, required: false, default: "" },
 });
 
 const movieSchema = new mongoose.Schema({
@@ -26,7 +25,8 @@ const movieSchema = new mongoose.Schema({
   runtime: { type: Number, required: false, default: 0 },
   status: { type: String, required: true },
   watchStatus: { type: String, required: false, default: "" },
-  discVersion: { type: String, required: false, default: "" },
+  ownedDiscVersions: [{ type: String, required: false, default: "" }],
+  wishlistDiscVersions: [{ type: String, required: false, default: "" }],
   voteAverage: { type: Number, required: false, default: 0 },
   posterPath: { type: String, required: false, default: "https://i.imgur.com/42uQxSx.png" },
   logoPath: { type: String, required: false, default: "" },
