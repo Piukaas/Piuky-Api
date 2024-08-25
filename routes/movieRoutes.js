@@ -1,29 +1,60 @@
 const express = require("express");
 const router = express.Router();
-const Movie = require("../models/movies/movie");
-const authenticateToken = require("./authMiddleware");
 const fetch = require("node-fetch");
 
-// Create a new movie
-router.post("/", authenticateToken, async (req, res) => {
-  const movie = new Movie(req.body);
+// Search for movies on TMDB
+router.get("/tmdb", async (req, res) => {
+  const title = req.query.title;
+
   try {
-    await movie.save();
-    res.status(201).send(movie);
-  } catch (err) {
-    res.status(400).send(err);
+    const response = await fetch(`${process.env.TMDB_API_URL}/search/movie?query=${title}&include_adult=true`, {
+      method: "GET",
+      headers: {
+        accept: "application/json",
+        Authorization: `Bearer ${process.env.TMDB_ACCESS_TOKEN}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch movies");
+    }
+
+    const movies = await response.json();
+    res.json(movies);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
+
+// Get movie details from TMDB
+router.get("/tmdb/:id", async (req, res) => {
+  const id = req.params.id;
+
+  try {
+    const response = await fetch(`${process.env.TMDB_API_URL}/movie/${id}?append_to_response=videos,images`, {
+      method: "GET",
+      headers: {
+        accept: "application/json",
+        Authorization: `Bearer ${process.env.TMDB_ACCESS_TOKEN}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch movie");
+    }
+
+    const movie = await response.json();
+    res.json(movie);
+  } catch (error) {
+    res.status(500).send(error);
   }
 });
 
 // Get all movies
 router.get("/", async (req, res) => {
   const searchTerm = req.query.search || "";
-  const platform = req.query.platform || "";
   try {
     const query = { name: { $regex: new RegExp(searchTerm, "i") } };
-    if (platform) {
-      query.platform = platform;
-    }
     const movies = await Movie.find(query).sort({ title: 1 }); // Sort movies by name in ascending order
     res.send(movies);
   } catch (err) {
