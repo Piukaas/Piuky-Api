@@ -1,9 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const fetch = require("node-fetch");
+const authenticateToken = require("./authMiddleware");
 
 // Search for movies/tv-shows on TMDB
-router.get("/tmdb", async (req, res) => {
+router.get("/tmdb", authenticateToken, async (req, res) => {
   const title = req.query.title;
   const searchType = req.query.searchType;
 
@@ -32,7 +33,7 @@ router.get("/tmdb", async (req, res) => {
 });
 
 // Get movie/tv-show details from TMDB
-router.get("/tmdb/:id", async (req, res) => {
+router.get("/tmdb/:id", authenticateToken, async (req, res) => {
   const id = req.params.id;
   const searchType = req.query.searchType;
 
@@ -60,17 +61,17 @@ router.get("/tmdb/:id", async (req, res) => {
   }
 });
 
-// Get all movies
-router.get("/", async (req, res) => {
-  const searchTerm = req.query.search || "";
-  try {
-    const query = { name: { $regex: new RegExp(searchTerm, "i") } };
-    const movies = await Movie.find(query).sort({ title: 1 }); // Sort movies by name in ascending order
-    res.send(movies);
-  } catch (err) {
-    res.status(500).send(err);
-  }
-});
+// Get all movies for a user
+// router.get("/", async (req, res) => {
+//   const searchTerm = req.query.search || "";
+//   try {
+//     const query = { name: { $regex: new RegExp(searchTerm, "i") } };
+//     const movies = await Movie.find(query).sort({ title: 1 }); // Sort movies by name in ascending order
+//     res.send(movies);
+//   } catch (err) {
+//     res.status(500).send(err);
+//   }
+// });
 
 // Get artworks for a movie
 // router.post("/artworks", async (req, res) => {
