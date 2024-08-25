@@ -4,22 +4,6 @@ const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-// Register a new user
-router.post("/register", async (req, res) => {
-  const hashedPassword = await bcrypt.hash(req.body.password, 10);
-  const user = new User({
-    username: req.body.username,
-    password: hashedPassword,
-  });
-
-  try {
-    const savedUser = await user.save();
-    res.json(savedUser);
-  } catch (err) {
-    res.status(500).json({ message: err });
-  }
-});
-
 // Login
 router.post("/login", async (req, res) => {
   const user = await User.findOne({ email: req.body.email });
