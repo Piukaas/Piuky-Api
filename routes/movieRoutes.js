@@ -2,12 +2,17 @@ const express = require("express");
 const router = express.Router();
 const fetch = require("node-fetch");
 
-// Search for movies on TMDB
+// Search for movies/tv-shows on TMDB
 router.get("/tmdb", async (req, res) => {
   const title = req.query.title;
+  const searchType = req.query.searchType;
+
+  if (searchType !== "movie" && searchType !== "tv") {
+    return res.status(400).json({ error: "Invalid search term. Only 'movie' or 'tv' are allowed." });
+  }
 
   try {
-    const response = await fetch(`${process.env.TMDB_API_URL}/search/movie?query=${title}&include_adult=true`, {
+    const response = await fetch(`${process.env.TMDB_API_URL}/search/${searchType}?query=${title}&include_adult=true`, {
       method: "GET",
       headers: {
         accept: "application/json",
@@ -16,22 +21,27 @@ router.get("/tmdb", async (req, res) => {
     });
 
     if (!response.ok) {
-      throw new Error("Failed to fetch movies");
+      throw new Error("Failed to fetch from TMDB");
     }
 
-    const movies = await response.json();
-    res.json(movies);
+    const results = await response.json();
+    res.json(results);
   } catch (error) {
     res.status(500).send(error);
   }
 });
 
-// Get movie details from TMDB
+// Get movie/tv-show details from TMDB
 router.get("/tmdb/:id", async (req, res) => {
   const id = req.params.id;
+  const searchType = req.query.searchType;
+
+  if (searchType !== "movie" && searchType !== "tv") {
+    return res.status(400).json({ error: "Invalid search term. Only 'movie' or 'tv' are allowed." });
+  }
 
   try {
-    const response = await fetch(`${process.env.TMDB_API_URL}/movie/${id}?append_to_response=videos,images`, {
+    const response = await fetch(`${process.env.TMDB_API_URL}/${searchType}/${id}?append_to_response=videos,images`, {
       method: "GET",
       headers: {
         accept: "application/json",
@@ -40,11 +50,11 @@ router.get("/tmdb/:id", async (req, res) => {
     });
 
     if (!response.ok) {
-      throw new Error("Failed to fetch movie");
+      throw new Error("Failed to fetch from TMDB");
     }
 
-    const movie = await response.json();
-    res.json(movie);
+    const result = await response.json();
+    res.json(result);
   } catch (error) {
     res.status(500).send(error);
   }
