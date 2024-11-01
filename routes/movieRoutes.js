@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const fetch = require("node-fetch");
 const authenticateToken = require("./authMiddleware");
+const Movie = require("../models/movies/movie");
 
 // Search for movies/tv-shows on TMDB
 router.get("/tmdb", authenticateToken, async (req, res) => {
@@ -9,17 +10,22 @@ router.get("/tmdb", authenticateToken, async (req, res) => {
   const searchType = req.query.searchType;
 
   if (searchType !== "movie" && searchType !== "tv") {
-    return res.status(400).json({ error: "Invalid search term. Only 'movie' or 'tv' are allowed." });
+    return res.status(400).json({
+      error: "Invalid search term. Only 'movie' or 'tv' are allowed.",
+    });
   }
 
   try {
-    const response = await fetch(`${process.env.TMDB_API_URL}/search/${searchType}?query=${title}&include_adult=true`, {
-      method: "GET",
-      headers: {
-        accept: "application/json",
-        Authorization: `Bearer ${process.env.TMDB_ACCESS_TOKEN}`,
-      },
-    });
+    const response = await fetch(
+      `${process.env.TMDB_API_URL}/search/${searchType}?query=${title}&include_adult=false`,
+      {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          Authorization: `Bearer ${process.env.TMDB_ACCESS_TOKEN}`,
+        },
+      }
+    );
 
     if (!response.ok) {
       throw new Error("Failed to fetch from TMDB");
@@ -38,17 +44,22 @@ router.get("/tmdb/:id", authenticateToken, async (req, res) => {
   const searchType = req.query.searchType;
 
   if (searchType !== "movie" && searchType !== "tv") {
-    return res.status(400).json({ error: "Invalid search term. Only 'movie' or 'tv' are allowed." });
+    return res.status(400).json({
+      error: "Invalid search term. Only 'movie' or 'tv' are allowed.",
+    });
   }
 
   try {
-    const response = await fetch(`${process.env.TMDB_API_URL}/${searchType}/${id}?append_to_response=videos,images`, {
-      method: "GET",
-      headers: {
-        accept: "application/json",
-        Authorization: `Bearer ${process.env.TMDB_ACCESS_TOKEN}`,
-      },
-    });
+    const response = await fetch(
+      `${process.env.TMDB_API_URL}/${searchType}/${id}?append_to_response=videos,images`,
+      {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          Authorization: `Bearer ${process.env.TMDB_ACCESS_TOKEN}`,
+        },
+      }
+    );
 
     if (!response.ok) {
       throw new Error("Failed to fetch from TMDB");
@@ -61,6 +72,19 @@ router.get("/tmdb/:id", authenticateToken, async (req, res) => {
   }
 });
 
+// Create a new movie for a user
+router.post("/", authenticateToken, async (req, res) => {
+  try {
+    const movie = new Movie(req.body);
+    console.log(movie);
+    await movie.save();
+    res.status(201).send(movie);
+  } catch (error) {
+    console.error("Error saving movie:", error);
+    res.status(400).send(error);
+  }
+});
+
 // Get all movies for a user
 // router.get("/", async (req, res) => {
 //   const searchTerm = req.query.search || "";
@@ -70,36 +94,6 @@ router.get("/tmdb/:id", authenticateToken, async (req, res) => {
 //     res.send(movies);
 //   } catch (err) {
 //     res.status(500).send(err);
-//   }
-// });
-
-// Get artworks for a movie
-// router.post("/artworks", async (req, res) => {
-//   const movieName = req.body.movieName;
-//   const headers = {
-//     Authorization: `Bearer ${process.env.AUTHORIZATION}`,
-//     "Client-ID": process.env.CLIENT_ID,
-//     "Content-Type": "application/json",
-//   };
-
-//   const body = `fields name, artworks.url, cover.url; where category = 0; search "${movieName}"; limit 3;`;
-
-//   try {
-//     const response = await fetch(`${process.env.IGBD_API_URL}/movies`, {
-//       method: "POST",
-//       headers: headers,
-//       body: body,
-//     });
-
-//     if (!response.ok) {
-//       throw new Error("Failed to fetch artworks");
-//     }
-
-//     const artworks = await response.json();
-//     res.json(artworks);
-//   } catch (error) {
-//     console.error("Error fetching artworks:", error);
-//     res.status(500).send("Failed to load artworks. Please try again later.");
 //   }
 // });
 

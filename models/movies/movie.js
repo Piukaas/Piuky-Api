@@ -25,10 +25,26 @@ const movieSchema = new mongoose.Schema({
   runtime: { type: Number, required: false, default: 0 },
   status: { type: String, required: true },
   watchStatus: { type: String, required: false, default: "" },
-  ownedDiscVersions: [{ type: String, required: false, default: "" }],
-  wishlistDiscVersions: [{ type: String, required: false, default: "" }],
+  ownedDiscVersions: [
+    {
+      type: String,
+      required: true,
+      enum: ["4K", "BLURAY", "DVD"],
+    },
+  ],
+  wishlistDiscVersions: [
+    {
+      type: String,
+      required: true,
+      enum: ["4K", "BLURAY", "DVD"],
+    },
+  ],
   voteAverage: { type: Number, required: false, default: 0 },
-  posterPath: { type: String, required: false, default: "https://i.imgur.com/42uQxSx.png" },
+  posterPath: {
+    type: String,
+    required: false,
+    default: "https://i.imgur.com/42uQxSx.png",
+  },
   logoPath: { type: String, required: false, default: "" },
   trailerUrl: { type: String, required: false, default: "" },
   mediaType: { type: String, required: true },
